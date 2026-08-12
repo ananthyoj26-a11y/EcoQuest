@@ -1,88 +1,117 @@
 # 🌱 EcoQuest — Campus Sustainability Gaming Platform
 
-> **PLAY FOR THE PLANET.** A premium, production-ready sustainability gaming platform for Saranathan College of Engineering.
-
-## 🎮 Overview
-
-EcoQuest turns real-world sustainability actions into a campus-wide RPG — students complete eco quests, verify them with AI, earn XP & Eco Coins, evolve their Eco Spirit, and compete in department guild wars.
-
-**Core Flow:**
-Landing → Google/Email Login → 6-Step Onboarding → Choose Avatar → Eco Goals → Personalized Quests → Real-World Action → AI Verification → XP/Coins/Badges → Avatar Evolution → Campus Competition → Measurable Impact
+> **PLAY FOR THE PLANET.**  
+> Transform campus environmental actions into a multiplayer RPG experience with AI verification, gaming avatars, department guild wars, and measurable sustainability metrics.  
+> *Saranathan College of Engineering Campus Arena*
 
 ---
 
-## Quick Start
+## 🚀 Quick Overview
 
-### 1. Install Dependencies
+EcoQuest turns real-world sustainable actions into an engaging gaming platform. Students log in, customize gaming avatars, select eco goals, complete campus sustainability quests, verify proof using Google Gemini AI, earn XP & Eco Coins, evolve their digital Eco Spirit, and lead their Department Guild to campus victory.
+
+```text
+Real-World Eco Action ➔ AI Proof Verification ➔ XP + Eco Coins ➔ Avatar & Eco Spirit Progression ➔ Guild Victory
+```
+
+---
+
+## 🔥 Key Features
+
+- **🔐 Dual Authentication System**: Firebase Auth with Google OAuth 2.0 Sign-In + Email/Password sign-up & sign-in.
+- **👤 28+ Gaming Avatars**: Choose from Eco Guardians, Cyber Rangers, Solar Sentinels, Bio Alchemists, and custom outfits.
+- **✨ 6-Step Hero Onboarding**: Personalize name, college, department guild, sustainability interests, and weekly goals.
+- **🤖 Gemini AI Vision Verification**: Upload photo proof of your eco action for real-time AI validation and reward distribution.
+- **🐾 Eco Spirit Digital Companion**: Evolve your companion from a tiny *Sproutling* to a *Planetary Guardian*.
+- **🏰 Department Guild Wars**: Compete across AI & DS, ECE, CSE, Mechanical, IT, Biotech, Civil, and EEE guilds.
+- **🗺️ Eco World Map & Eco Pet Arena**: Interactive 3D/2D visual campus ecosystem that grows as actions are completed.
+- **🗄️ Dual Database Architecture**: Primary Firestore DB + Supabase SQL analytics dual-sync with offline IndexedDB fallback.
+- **📱 PWA & Cross-Device Ready**: Fully responsive mobile/desktop UI with ambient particle systems, spatial audio, and haptic feedback.
+
+---
+
+## ⚡ Tech Stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Motion (Framer Motion)
+- **Authentication**: Firebase Auth (Google Sign-In & Email/Password)
+- **Databases**: Firebase Firestore + Supabase PostgreSQL
+- **Artificial Intelligence**: Google Gemini 2.5/3.0 Vision API & AI Sustainability Coach
+- **Server**: Express.js + Node.js (Vercel Serverless Ready)
+
+---
+
+## 🛠️ Local Development & Setup
+
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/ananthyoj26-a11y/EcoQuest.git
+cd EcoQuest
 npm install
+```
 
-### 2. Configure Environment
-cp .env.example .env
-# Fill in your Firebase + Supabase + Gemini API credentials
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env` and fill in your keys:
 
-### 3. Run Locally
+```env
+# Gemini AI
+GEMINI_API_KEY="your_gemini_api_key_here"
+
+# App URL
+VITE_APP_URL="http://localhost:3000"
+
+# Firebase Web SDK Configuration
+VITE_FIREBASE_API_KEY="AIzaSy..."
+VITE_FIREBASE_AUTH_DOMAIN="your-app.firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID="your-project-id"
+VITE_FIREBASE_STORAGE_BUCKET="your-app.firebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID="107116..."
+VITE_FIREBASE_APP_ID="1:107116..."
+
+# Supabase Configuration
+VITE_SUPABASE_URL="https://wywhxwboyoerntqwajuo.supabase.co"
+VITE_SUPABASE_ANON_KEY="sb_publishable_..."
+SUPABASE_SERVICE_ROLE_KEY="sb_secret_..."
+```
+
+### 3. Run Development Server
+```bash
 npm run dev
-# Opens on http://localhost:3000
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-### 4. Production Build
+### 4. Build for Production
+```bash
 npm run build
 npm start
+```
 
 ---
 
-## Firebase Setup
+## 🗄️ Supabase Database Setup
 
-1. Create a Firebase project at console.firebase.google.com
-2. Enable Authentication with Google provider and Email/Password
-3. Add your domains to Auth > Authorized Domains: localhost, your-app.vercel.app
-4. Create a Firestore Database in production mode
-5. Deploy security rules: firebase deploy --only firestore:rules
-6. Copy your Web App config to .env
+To set up the Supabase database schema:
 
----
-
-## Supabase Setup (Optional)
-
-EcoQuest uses Supabase as a secondary analytics database. If not configured, it gracefully falls back to Firestore-only mode.
-
-1. Create a project at supabase.com
-2. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your env
+1. Open your Supabase Dashboard → **SQL Editor** → **New Query**.
+2. Run the idempotent SQL script located at:
+   [`supabase_schema.sql`](file:///C:/Users/Ananth/.gemini/antigravity/brain/2989af86-661a-4bc1-a208-924cc9fa4f9a/supabase_schema.sql)
+3. The script safely creates all tables, triggers, indexes, and Row Level Security (RLS) policies:
+   - `user_profiles`, `user_progress`, `user_impact`, `user_avatars`, `user_achievements`, `user_notifications`, `user_preferences`
+   - `quests`, `live_activities`, `leaderboard`
+   - Views: `campus_leaderboard`, `department_leaderboard`, `campus_impact`
 
 ---
 
-## Vercel Deployment
+## 🚢 Deployment (Vercel)
 
-1. Push code to GitHub
-2. Import repository in vercel.com
-3. Add all environment variables in Vercel Dashboard > Settings > Environment Variables
-4. Deploy
+EcoQuest is optimized for instant deployment on Vercel:
 
----
-
-## Firestore Collections
-
-| Collection | Purpose |
-|---|---|
-| users/{uid} | Root identity doc |
-| userProfiles/{uid} | Profile, avatar, preferences |
-| userProgress/{uid} | XP, level, eco spirit, streaks |
-| userImpact/{uid} | Environmental impact metrics |
-| userAvatars/{uid} | Avatar cosmetics |
-| userAchievements/{uid} | Badges, milestones |
-| userNotifications/{uid} | In-app notifications |
-| userPreferences/{uid} | Settings |
+1. Connect your repository to Vercel.
+2. Set Environment Variables in Vercel Project Settings (`VITE_FIREBASE_*`, `GEMINI_API_KEY`, `VITE_SUPABASE_*`).
+3. Deploy! The included [`vercel.json`](vercel.json) handles single-page application routing and serverless function distribution.
 
 ---
 
-## Tech Stack
+## 📄 License & Credits
 
-- Frontend: React 19 + TypeScript + Vite
-- Styling: TailwindCSS v4 + custom CSS animations
-- Animation: Framer Motion
-- Auth: Firebase Authentication (Google + Email/Password)
-- Database: Firestore (primary) + Supabase (secondary)
-- AI: Google Gemini API
-- Backend: Express.js
-- Deployment: Vercel
-
-EcoQuest v3.6 -- Saranathan College of Engineering Campus Arena
+Developed for Saranathan College of Engineering Campus Sustainability Arena.  
+EcoQuest v3.6 • Play for the Planet 🌍
