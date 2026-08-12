@@ -1,0 +1,16 @@
+{
+  "short_name": "EcoQuest",
+  "name": "EcoQuest Campus Sustainability Platform",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%23071A14'/><path d='M256,128 C180,128 128,180 128,256 C128,332 180,384 256,384 C332,384 384,332 384,256' fill='none' stroke='%2316A36A' stroke-width='32'/><circle cx='256' cy='256' r='64' fill='%23B8E65A'/></svg>",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#071A14",
+  "theme_color": "#071A14",
+  "display": "standalone",
+  "orientation": "portrait"
+}

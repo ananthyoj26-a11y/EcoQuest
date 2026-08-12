@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .glass-panel-glow {
+    background: rgba(14, 124, 90, 0.12);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(22, 163, 106, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(7, 26, 20, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .neon-button-shadow {
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+  }
+
+  .neon-button-shadow-lg {
+    box-shadow: 0 0 30px rgba(22, 163, 106, 0.6);
+  }
+
+  /* High-Value Element Bloom Effects */
+  .neon-bloom {
+    filter: drop-shadow(0 0 8px rgba(184, 230, 90, 0.7));
+  }
+
+  .neon-bloom-lg {
+    filter: drop-shadow(0 0 16px rgba(22, 163, 106, 0.85));
+  }
+
+  .neon-text-bloom {
+    text-shadow: 0 0 10px rgba(184, 230, 90, 0.6), 0 0 20px rgba(22, 163, 106, 0.4);
+  }
+
+  .glow-high-value {
+    box-shadow: 0 0 20px rgba(22, 163, 106, 0.4), inset 0 0 10px rgba(184, 230, 90, 0.2);
+  }
+}
+
+/* Keyframes for Sway & Mesh */
+@keyframes sway {
+  0%, 100% { transform: rotate(-4deg) translateY(0px); }
+  50% { transform: rotate(4deg) translateY(-4px); }
+}
+
+@keyframes meshShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Keyframes for Dynamic Streak Fire Animation */
+@keyframes flameFlickerLight {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+  25% { transform: scale(1.08) rotate(-3deg); opacity: 0.95; }
+  50% { transform: scale(0.95) rotate(2deg); opacity: 0.8; }
+  75% { transform: scale(1.05) rotate(-2deg); opacity: 1; }
+}
+
+@keyframes flameFlickerMedium {
+  0%, 100% { transform: scale(1) translateY(0) rotate(0deg); filter: drop-shadow(0 0 8px #F97316); }
+  20% { transform: scale(1.12) translateY(-2px) rotate(-5deg); filter: drop-shadow(0 0 14px #EF4444); }
+  40% { transform: scale(0.92) translateY(1px) rotate(4deg); filter: drop-shadow(0 0 10px #F59E0B); }
+  60% { transform: scale(1.18) translateY(-3px) rotate(-3deg); filter: drop-shadow(0 0 18px #F97316); }
+  80% { transform: scale(1.04) translateY(-1px) rotate(2deg); filter: drop-shadow(0 0 12px #EF4444); }
+}
+
+@keyframes flameFlickerGodlike {
+  0%, 100% { transform: scale(1) translateY(0) rotate(0deg); filter: drop-shadow(0 0 12px #B8E65A) drop-shadow(0 0 22px #38BDF8); }
+  25% { transform: scale(1.25) translateY(-4px) rotate(-8deg); filter: drop-shadow(0 0 18px #16A36A) drop-shadow(0 0 28px #B8E65A); }
+  50% { transform: scale(0.95) translateY(1px) rotate(6deg); filter: drop-shadow(0 0 14px #F5C451) drop-shadow(0 0 20px #38BDF8); }
+  75% { transform: scale(1.22) translateY(-3px) rotate(-6deg); filter: drop-shadow(0 0 24px #B8E65A) drop-shadow(0 0 32px #16A36A); }
+}
+
+@keyframes fireAuraPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(249, 115, 22, 0.4), inset 0 0 6px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(239, 68, 68, 0.7), inset 0 0 12px rgba(249, 115, 22, 0.5); }
+}
+
+@keyframes fireGodlikeAura {
+  0%, 100% { box-shadow: 0 0 15px rgba(184, 230, 90, 0.6), 0 0 30px rgba(56, 189, 248, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(22, 163, 106, 0.8), 0 0 45px rgba(184, 230, 90, 0.6); }
+}
+
+/* Streak Fire Classes */
+.fire-anim-sm {
+  animation: flameFlickerLight 2.5s ease-in-out infinite;
+}
+
+.fire-anim-md {
+  animation: flameFlickerMedium 1.5s ease-in-out infinite;
+}
+
+.fire-anim-godlike {
+  animation: flameFlickerGodlike 0.9s ease-in-out infinite;
+}
+
+.fire-aura-md {
+  animation: fireAuraPulse 2s ease-in-out infinite;
+}
+
+.fire-aura-godlike {
+  animation: fireGodlikeAura 1.2s ease-in-out infinite;
+}
+
+.animate-sway {
+  animation: sway 4s ease-in-out infinite;
+}
+
+.bg-mesh-animated {
+  background: radial-gradient(circle at 20% 20%, rgba(14, 124, 90, 0.25), transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.15), transparent 45%),
+              radial-gradient(circle at 50% 50%, rgba(22, 163, 106, 0.18), transparent 50%),
+              #071A14;
+  background-size: 150% 150%;
+  animation: meshShift 18s ease infinite;
+}
+
