@@ -255,19 +255,62 @@ export function App() {
   const handleDemoLogin = async (username = 'Judge Demo User', email = 'judge@saranathan.ac.in', department: Department = 'AI & DS') => {
     audioService.playClick();
     try {
-      const res = await apiService.login(username, department);
-      setUser(res.user);
+      // Build a rich demo user locally — no server dependency
+      const demoUser: User = {
+        id: 'demo_judge_01',
+        name: username || 'Judge Demo User',
+        email: email || 'judge@saranathan.ac.in',
+        avatar: 'forest_guardian',
+        photoURL: '',
+        department: department || 'AI & DS',
+        level: 18,
+        xp: 2450,
+        nextLevelXp: 3000,
+        coins: 1850,
+        streak: 17,
+        streakFreeze: 1,
+        ecoSpiritName: 'Volt',
+        ecoSpiritStage: 'Cyber Sapling',
+        ecoSpiritStageLevel: 2,
+        unlockedWorldItems: ['solar_panel_1', 'rain_harvester_1', 'urban_garden_1'],
+        badges: [
+          { id: 'b1', title: 'Plastic Breaker', description: 'Avoided single-use plastics for 10 consecutive days', icon: 'ShieldCheck', rarity: 'Rare', unlockedAt: '2026-08-01' },
+          { id: 'b2', title: 'Solar Sentinel', description: 'Scanned 5 solar energy portals across campus', icon: 'Sun', rarity: 'Epic', unlockedAt: '2026-08-05' },
+          { id: 'b3', title: 'Streak Master', description: 'Maintained a 15-day eco quest streak', icon: 'Flame', rarity: 'Legendary', unlockedAt: '2026-08-10' }
+        ],
+        unlockedSkins: ['neon_cyber_green', 'obsidian_dark'],
+        activeFrame: 'frame_neon_glitch',
+        role: 'student',
+        createdAt: '2026-07-15',
+        lastActive: new Date().toISOString(),
+        campusRank: 12,
+        fullName: username || 'Judge Demo User',
+        preferredName: (username || 'Judge').split(' ')[0],
+        collegeName: 'Saranathan College of Engineering',
+        yearOfStudy: '3rd Year',
+        section: 'A',
+        sustainabilityInterests: ['♻️ Waste Reduction', '⚡ Energy', '🌱 Food & Agriculture'],
+        personalGoal: 'Demonstrate EcoQuest features',
+        weeklyGoal: 7,
+        profileCompletionScore: 95,
+        bio: 'Demo judge account — full feature access enabled.'
+      };
+
+      setUser(demoUser);
       setShowLandingView(false);
       showToast({
         type: 'success',
-        title: `Welcome, ${res.user.name}!`,
-        message: 'Connected in Fast-Pass Judge Demo mode. +100 Starter XP awarded!',
+        title: `Welcome, ${demoUser.preferredName}! 🌱`,
+        message: 'Fast-Pass Demo Mode active. Full EcoQuest experience unlocked!',
         xpReward: 100,
         coinReward: 50
       });
+
+      // Load game state in the background (quests, bounties, etc.)
       loadState();
     } catch (err) {
       console.error('Demo Login error:', err);
+      showToast({ type: 'warning', title: 'Demo login failed', message: 'Please refresh and try again.' });
     }
   };
 
