@@ -145,12 +145,15 @@ export const LandingPage: React.FC<Props> = ({
         err?.toString()?.includes('unauthorized-domain');
 
       if (isDomainError) {
-        const domain = typeof window !== 'undefined' ? window.location.hostname : 'current domain';
-        setAuthError(`Domain "${domain}" is not authorized in Firebase Console. Use Fast-Pass Demo Mode below.`);
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'unknown';
+        setAuthError(`DOMAIN_ERROR:${domain}`);
         setIsAuthenticating(false);
-      } else if (err?.code === 'auth/popup-closed-by-user') {
+      } else if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setIsAuthenticating(false);
-        setAuthError('Google sign-in popup was closed. Try again or use Demo Mode.');
+        // User closed the popup — no error shown, just reset
+      } else if (err?.code === 'auth/popup-blocked') {
+        setIsAuthenticating(false);
+        setAuthError('Popup was blocked by your browser. Please allow popups for this site and try again.');
       } else {
         setIsAuthenticating(false);
         setAuthError(err?.message || 'Google sign-in failed. Try Email sign-in or Demo Mode.');
@@ -610,11 +613,33 @@ export const LandingPage: React.FC<Props> = ({
               </div>
 
               {/* Error Banner */}
-              {authError && (
-                <div className="mb-4 p-3 bg-rose-950/80 border border-rose-500/50 rounded-xl text-xs text-rose-200 font-mono">
-                  ⚠️ {authError}
-                </div>
-              )}
+              {authError && (() => {
+                const isDomainErr = authError.startsWith('DOMAIN_ERROR:');
+                const domain = isDomainErr ? authError.replace('DOMAIN_ERROR:', '') : '';
+                const projectId = 'studio-1326043722-89217';
+                const firebaseUrl = `https://console.firebase.google.com/project/${projectId}/authentication/settings`;
+                return isDomainErr ? (
+                  <div className="mb-4 p-4 bg-amber-950/80 border border-amber-500/50 rounded-xl text-xs text-amber-100 space-y-2">
+                    <p className="font-black text-amber-300 text-sm">⚠️ Domain Not Authorized in Firebase</p>
+                    <p className="text-amber-200">The domain <code className="bg-amber-900/80 px-1.5 py-0.5 rounded font-mono">{domain}</code> needs to be added to your Firebase project.</p>
+                    <div className="bg-amber-900/60 rounded-lg p-3 space-y-1 text-amber-200">
+                      <p className="font-bold text-amber-300">🔧 Fix in 30 seconds:</p>
+                      <ol className="list-decimal list-inside space-y-1 pl-1">
+                        <li>Open <a href={firebaseUrl} target="_blank" rel="noopener noreferrer" className="underline text-amber-300 hover:text-white font-bold">Firebase Console → Auth → Settings</a></li>
+                        <li>Scroll to <strong>Authorized Domains</strong></li>
+                        <li>Click <strong>Add domain</strong></li>
+                        <li>Paste: <code className="bg-amber-900 px-1 rounded">{domain}</code></li>
+                        <li>Save — then try Google sign-in again ✅</li>
+                      </ol>
+                    </div>
+                    <p className="text-amber-400">Meanwhile, use <strong>Email sign-up</strong> (tab above) or <strong>Demo Mode</strong> below.</p>
+                  </div>
+                ) : (
+                  <div className="mb-4 p-3 bg-rose-950/80 border border-rose-500/50 rounded-xl text-xs text-rose-200 font-mono">
+                    ⚠️ {authError}
+                  </div>
+                );
+              })()}
 
               {/* GOOGLE TAB */}
               {authTab === 'google' && (
