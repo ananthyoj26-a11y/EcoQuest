@@ -197,8 +197,8 @@ export const signUpWithEmailPassword = async (name: string, email: string, pass:
     photoURL: '',
     createdAt: serverTimestamp(),
     lastLoginAt: serverTimestamp(),
-    onboardingCompleted: false,
-    profileCompleted: false
+    onboardingCompleted: true,
+    profileCompleted: true
   };
   await setDoc(userRef, newUserDoc, { merge: true });
 
@@ -210,6 +210,7 @@ export const signUpWithEmailPassword = async (name: string, email: string, pass:
       email: firebaseUser.email || email,
       fullName: name || 'Eco Hero',
       preferredName: (name || 'Eco Hero').split(' ')[0],
+      onboardingCompleted: true,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     },

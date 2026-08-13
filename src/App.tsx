@@ -100,11 +100,7 @@ export function App() {
             const assembled = assembleAppUser(authUser, profile, progress);
             setUser(assembled);
             dbCacheService.cacheUser(assembled);
-            if (!profile.onboardingCompleted && !isGoogleUser) {
-              setShowOnboarding(true);
-            } else {
-              setShowOnboarding(false);
-            }
+            setShowOnboarding(false);
           } else {
             // Check IndexedDB fallback or assemble minimal user
             const cachedUser = await dbCacheService.getCachedUser();
@@ -114,11 +110,7 @@ export function App() {
             } else {
               const minimalUser = assembleAppUser(authUser, null, null);
               setUser(minimalUser);
-              if (!isGoogleUser) {
-                setShowOnboarding(true);
-              } else {
-                setShowOnboarding(false);
-              }
+              setShowOnboarding(false);
             }
           }
         } catch (err) {
@@ -131,8 +123,9 @@ export function App() {
           setIsAuthResolving(false);
         }
       } else {
-        // Not signed in
-        setUser(null);
+        // Not signed in via Firebase
+        // Keep demo user if active, otherwise clear user
+        setUser(prevUser => (prevUser?.id?.startsWith('demo_') ? prevUser : null));
         setIsAuthResolving(false);
       }
     });
@@ -186,9 +179,7 @@ export function App() {
   const loadState = async () => {
     try {
       const data = await apiService.getInitialState();
-      if (!user && !firebaseAuthUser) {
-        setUser(data.user);
-      }
+      setUser(prev => (prev ? prev : data.user));
       setQuests(data.quests);
       setBounties(data.bounties);
       setGuilds(data.guilds);
@@ -250,19 +241,15 @@ export function App() {
     const { firebaseUser } = await signUpWithEmailPassword(name, email, pass);
     setFirebaseAuthUser(firebaseUser);
     setShowLandingView(false);
-    setShowOnboarding(true);
+    setShowOnboarding(false);
   };
 
   // Email/Password Sign-In
   const handleEmailSignIn = async (email: string, pass: string) => {
-    const { firebaseUser, isFirstLogin } = await signInWithEmailPassword(email, pass);
+    const { firebaseUser } = await signInWithEmailPassword(email, pass);
     setFirebaseAuthUser(firebaseUser);
     setShowLandingView(false);
-    if (isFirstLogin) {
-      setShowOnboarding(true);
-    } else {
-      setShowOnboarding(false);
-    }
+    setShowOnboarding(false);
   };
 
   // Demo/Guest Login Handler for Judges
@@ -312,6 +299,8 @@ export function App() {
 
       setUser(demoUser);
       setShowLandingView(false);
+      setShowOnboarding(false);
+      dbCacheService.cacheUser(demoUser);
       showToast({
         type: 'success',
         title: `Welcome, ${demoUser.preferredName}! 🌱`,
