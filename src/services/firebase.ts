@@ -144,7 +144,9 @@ export const signInWithGoogle = async () => {
           displayName,
           photoURL,
           lastLoginAt: serverTimestamp(),
-          ...(isFirstLogin ? { createdAt: serverTimestamp(), onboardingCompleted: false, profileCompleted: false } : {})
+          onboardingCompleted: true,
+          profileCompleted: true,
+          ...(isFirstLogin ? { createdAt: serverTimestamp() } : {})
         },
         { merge: true }
       );
@@ -158,6 +160,7 @@ export const signInWithGoogle = async () => {
           fullName: displayName,
           preferredName: displayName.split(' ')[0] || displayName,
           photoURL,
+          onboardingCompleted: true,
           updatedAt: serverTimestamp()
         },
         { merge: true }

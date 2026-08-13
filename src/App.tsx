@@ -94,29 +94,38 @@ export function App() {
         try {
           const profile = await getUserProfile(authUser.uid);
           const progress = await getUserProgress(authUser.uid);
+          const isGoogleUser = authUser.providerData?.some((p: any) => p.providerId === 'google.com');
 
           if (profile) {
             const assembled = assembleAppUser(authUser, profile, progress);
             setUser(assembled);
             dbCacheService.cacheUser(assembled);
-            if (!profile.onboardingCompleted) {
+            if (!profile.onboardingCompleted && !isGoogleUser) {
               setShowOnboarding(true);
+            } else {
+              setShowOnboarding(false);
             }
           } else {
             // Check IndexedDB fallback or assemble minimal user
             const cachedUser = await dbCacheService.getCachedUser();
             if (cachedUser && cachedUser.id === authUser.uid) {
               setUser(cachedUser);
+              setShowOnboarding(false);
             } else {
               const minimalUser = assembleAppUser(authUser, null, null);
               setUser(minimalUser);
-              setShowOnboarding(true);
+              if (!isGoogleUser) {
+                setShowOnboarding(true);
+              } else {
+                setShowOnboarding(false);
+              }
             }
           }
         } catch (err) {
           console.warn('Firebase Auth profile sync error:', err);
           const minimalUser = assembleAppUser(authUser, null, null);
           setUser(minimalUser);
+          setShowOnboarding(false);
         } finally {
           setIsLoadingAuth(false);
           setIsAuthResolving(false);
@@ -230,6 +239,7 @@ export function App() {
     try {
       await signInWithGoogle();
       setShowLandingView(false);
+      setShowOnboarding(false);
     } catch (err: any) {
       throw err;
     }
@@ -248,7 +258,11 @@ export function App() {
     const { firebaseUser, isFirstLogin } = await signInWithEmailPassword(email, pass);
     setFirebaseAuthUser(firebaseUser);
     setShowLandingView(false);
-    if (isFirstLogin) setShowOnboarding(true);
+    if (isFirstLogin) {
+      setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
+    }
   };
 
   // Demo/Guest Login Handler for Judges
