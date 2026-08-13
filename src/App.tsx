@@ -45,9 +45,49 @@ import { OnboardingWizard } from './components/OnboardingWizard';
 import { ProfileEditModal } from './components/ProfileEditModal';
 import { ProfileView } from './components/ProfileView';
 
+const DEFAULT_EXPLORER_USER: User = {
+  id: 'open_explorer_01',
+  name: 'Alex Vance',
+  email: 'explorer@saranathan.ac.in',
+  avatar: 'forest_guardian',
+  photoURL: '',
+  department: 'AI & DS',
+  level: 18,
+  xp: 2450,
+  nextLevelXp: 3000,
+  coins: 1850,
+  streak: 17,
+  streakFreeze: 1,
+  ecoSpiritName: 'Volt',
+  ecoSpiritStage: 'Cyber Sapling',
+  ecoSpiritStageLevel: 2,
+  unlockedWorldItems: ['solar_panel_1', 'rain_harvester_1', 'urban_garden_1'],
+  badges: [
+    { id: 'b1', title: 'Plastic Breaker', description: 'Avoided single-use plastics for 10 consecutive days', icon: 'ShieldCheck', rarity: 'Rare', unlockedAt: '2026-08-01' },
+    { id: 'b2', title: 'Solar Sentinel', description: 'Scanned 5 solar energy portals across campus', icon: 'Sun', rarity: 'Epic', unlockedAt: '2026-08-05' },
+    { id: 'b3', title: 'Streak Master', description: 'Maintained a 15-day eco quest streak', icon: 'Flame', rarity: 'Legendary', unlockedAt: '2026-08-10' }
+  ],
+  unlockedSkins: ['neon_cyber_green', 'obsidian_dark'],
+  activeFrame: 'frame_neon_glitch',
+  role: 'admin',
+  createdAt: '2026-07-15',
+  lastActive: new Date().toISOString(),
+  campusRank: 12,
+  fullName: 'Alex Vance',
+  preferredName: 'Alex',
+  collegeName: 'Saranathan College of Engineering',
+  yearOfStudy: '3rd Year',
+  section: 'A',
+  sustainabilityInterests: ['♻️ Waste Reduction', '⚡ Energy', '🌱 Food & Agriculture'],
+  personalGoal: 'Build a daily eco habit',
+  weeklyGoal: 7,
+  profileCompletionScore: 95,
+  bio: 'EcoQuest Explorer — free open access mode active.'
+};
+
 export function App() {
   const [isPreloading, setIsPreloading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(DEFAULT_EXPLORER_USER);
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<any>(null);
   // true while waiting for Firebase auth to resolve (before we know if logged in)
   const [isAuthResolving, setIsAuthResolving] = useState(true);
@@ -123,9 +163,8 @@ export function App() {
           setIsAuthResolving(false);
         }
       } else {
-        // Not signed in via Firebase
-        // Keep demo user if active, otherwise clear user
-        setUser(prevUser => (prevUser?.id?.startsWith('demo_') ? prevUser : null));
+        // Not signed in via Firebase — assign open explorer user so website is 100% accessible
+        setUser(prevUser => (prevUser ? prevUser : DEFAULT_EXPLORER_USER));
         setIsAuthResolving(false);
       }
     });
@@ -231,6 +270,7 @@ export function App() {
       await signInWithGoogle();
       setShowLandingView(false);
       setShowOnboarding(false);
+      setActiveTab('profile');
     } catch (err: any) {
       throw err;
     }
@@ -242,6 +282,7 @@ export function App() {
     setFirebaseAuthUser(firebaseUser);
     setShowLandingView(false);
     setShowOnboarding(false);
+    setActiveTab('profile');
   };
 
   // Email/Password Sign-In
@@ -250,6 +291,7 @@ export function App() {
     setFirebaseAuthUser(firebaseUser);
     setShowLandingView(false);
     setShowOnboarding(false);
+    setActiveTab('profile');
   };
 
   // Demo/Guest Login Handler for Judges
@@ -281,7 +323,7 @@ export function App() {
         ],
         unlockedSkins: ['neon_cyber_green', 'obsidian_dark'],
         activeFrame: 'frame_neon_glitch',
-        role: 'student',
+        role: 'admin',
         createdAt: '2026-07-15',
         lastActive: new Date().toISOString(),
         campusRank: 12,
@@ -300,6 +342,7 @@ export function App() {
       setUser(demoUser);
       setShowLandingView(false);
       setShowOnboarding(false);
+      setActiveTab('profile');
       dbCacheService.cacheUser(demoUser);
       showToast({
         type: 'success',
@@ -485,13 +528,13 @@ export function App() {
     } catch {
       // Ignored
     }
-    setUser(null);
+    setUser(DEFAULT_EXPLORER_USER);
     setFirebaseAuthUser(null);
-    setShowLandingView(true);
+    setShowLandingView(false);
     showToast({
       type: 'info',
-      title: 'Signed Out',
-      message: 'You have been safely signed out of EcoQuest.'
+      title: 'Open Access Active',
+      message: 'Continuing in Open Explorer Mode — all features remain unlocked.'
     });
   };
 
@@ -577,8 +620,8 @@ export function App() {
     );
   }
 
-  // Render Landing Page if not authenticated or explicitly viewing landing page
-  if (!user || showLandingView) {
+  // Render Landing Page if explicitly requested by user
+  if (showLandingView) {
     return (
       <LandingPage
         onGoogleSignIn={handleGoogleSignIn}
