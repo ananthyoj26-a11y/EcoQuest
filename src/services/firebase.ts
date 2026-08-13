@@ -130,30 +130,38 @@ export const signInWithGoogle = async () => {
       const userRef = doc(db, 'users', firebaseUser.uid);
       const userSnap = await getDoc(userRef);
 
-      isFirstLogin = !userSnap.exists();
+      isFirstLogin = !userSnap.exists() || !userSnap.data()?.onboardingCompleted;
 
-      if (isFirstLogin) {
-        // Create primary identity user record
-        const newUserDoc: UserDoc = {
+      const photoURL = firebaseUser.photoURL || '';
+      const displayName = firebaseUser.displayName || 'Eco Hero';
+
+      // Save/Merge root identity user record
+      await setDoc(
+        userRef,
+        {
           uid: firebaseUser.uid,
           email: firebaseUser.email || '',
-          displayName: firebaseUser.displayName || 'Eco Hero',
-          photoURL: firebaseUser.photoURL || '',
-          createdAt: serverTimestamp(),
+          displayName,
+          photoURL,
           lastLoginAt: serverTimestamp(),
-          onboardingCompleted: false,
-          profileCompleted: false
-        };
-        await setDoc(userRef, newUserDoc);
-      } else {
-        // Update last login
-        await updateDoc(userRef, {
-          lastLoginAt: serverTimestamp(),
-          displayName: firebaseUser.displayName || userSnap.data()?.displayName,
-          photoURL: firebaseUser.photoURL || userSnap.data()?.photoURL
-        });
-        isFirstLogin = !userSnap.data()?.onboardingCompleted;
-      }
+          ...(isFirstLogin ? { createdAt: serverTimestamp(), onboardingCompleted: false, profileCompleted: false } : {})
+        },
+        { merge: true }
+      );
+
+      // Merge into userProfiles as well to ensure photoURL and name are available
+      const profileRef = doc(db, 'userProfiles', firebaseUser.uid);
+      await setDoc(
+        profileRef,
+        {
+          email: firebaseUser.email || '',
+          fullName: displayName,
+          preferredName: displayName.split(' ')[0] || displayName,
+          photoURL,
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      );
     } catch (fsErr) {
       console.warn('Firestore user doc sync warning:', fsErr);
     }
@@ -177,9 +185,9 @@ export const signUpWithEmailPassword = async (name: string, email: string, pass:
     }
   }
 
-  // Create root identity doc
+  // Create root identity doc safely with merge: true
   const userRef = doc(db, 'users', firebaseUser.uid);
-  const newUserDoc: UserDoc = {
+  const newUserDoc: Partial<UserDoc> = {
     uid: firebaseUser.uid,
     email: firebaseUser.email || email,
     displayName: name || 'Eco Hero',
@@ -190,6 +198,20 @@ export const signUpWithEmailPassword = async (name: string, email: string, pass:
     profileCompleted: false
   };
   await setDoc(userRef, newUserDoc, { merge: true });
+
+  // Also create initial userProfiles doc
+  const profileRef = doc(db, 'userProfiles', firebaseUser.uid);
+  await setDoc(
+    profileRef,
+    {
+      email: firebaseUser.email || email,
+      fullName: name || 'Eco Hero',
+      preferredName: (name || 'Eco Hero').split(' ')[0],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
 
   return { firebaseUser, isFirstLogin: true };
 };
@@ -204,12 +226,21 @@ export const signInWithEmailPassword = async (email: string, pass: string) => {
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) {
       isFirstLogin = true;
+      await setDoc(userRef, {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || email,
+        displayName: firebaseUser.displayName || 'Eco Hero',
+        createdAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp(),
+        onboardingCompleted: false,
+        profileCompleted: false
+      }, { merge: true });
     } else {
-      await updateDoc(userRef, { lastLoginAt: serverTimestamp() });
+      await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
       isFirstLogin = !userSnap.data()?.onboardingCompleted;
     }
-  } catch {
-    // Ignored
+  } catch (fsErr) {
+    console.warn('Firestore sign-in sync warning:', fsErr);
   }
 
   return { firebaseUser, isFirstLogin };
@@ -353,12 +384,16 @@ export const saveUserProfileAndProgress = async (
     });
   }
 
-  // Mark onboarding complete in root user doc
-  await updateDoc(userRef, {
-    onboardingCompleted: true,
-    profileCompleted: profileCompletionScore >= 80,
-    lastLoginAt: serverTimestamp()
-  });
+  // Mark onboarding complete in root user doc safely with merge: true
+  await setDoc(
+    userRef,
+    {
+      onboardingCompleted: true,
+      profileCompleted: profileCompletionScore >= 80,
+      lastLoginAt: serverTimestamp()
+    },
+    { merge: true }
+  );
 };
 
 // Helper to convert Firestore profile + progress into App User state
@@ -374,9 +409,11 @@ export const assembleAppUser = (
   let userDoc: UserDoc | null = null;
   let profileDoc: UserProfileDoc | null = null;
   let progressDoc: UserProgressDoc | null = null;
+  let authUserObj: any = null;
 
   if (typeof param1 === 'object' && param1 !== null && param1.uid) {
     // Called as assembleAppUser(authUser, profileDoc, progressDoc)
+    authUserObj = param1;
     uid = param1.uid;
     email = param1.email || '';
     profileDoc = param2 || null;
@@ -389,11 +426,18 @@ export const assembleAppUser = (
     profileDoc = param4 || null;
     progressDoc = param5 || null;
   }
+
+  const googlePhotoURL = authUserObj?.photoURL || (profileDoc as any)?.photoURL || (userDoc as any)?.photoURL || '';
+  const googleName = authUserObj?.displayName || (userDoc as any)?.displayName || '';
+
+  const userName = profileDoc?.preferredName || profileDoc?.fullName || googleName || 'Eco Hero';
+
   return {
     id: uid,
-    name: profileDoc?.preferredName || profileDoc?.fullName || userDoc?.displayName || 'Eco Hero',
-    email: email || userDoc?.email || '',
+    name: userName,
+    email: email || userDoc?.email || authUserObj?.email || '',
     avatar: profileDoc?.selectedAvatar || 'forest_guardian',
+    photoURL: googlePhotoURL,
     department: (profileDoc?.department as Department) || 'AI & DS',
     level: progressDoc?.level || 1,
     xp: progressDoc?.xp || 150,
@@ -416,8 +460,8 @@ export const assembleAppUser = (
     lastActive: new Date().toISOString(),
     campusRank: progressDoc?.campusRank || 14,
     // Attach profile extras onto User object for app-wide access
-    fullName: profileDoc?.fullName,
-    preferredName: profileDoc?.preferredName,
+    fullName: profileDoc?.fullName || googleName,
+    preferredName: profileDoc?.preferredName || (googleName ? googleName.split(' ')[0] : userName),
     collegeName: profileDoc?.collegeName || 'Saranathan College of Engineering',
     yearOfStudy: profileDoc?.yearOfStudy || '3rd Year',
     section: profileDoc?.section || 'A',

@@ -60,6 +60,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="relative group cursor-pointer" onClick={onOpenEdit}>
               <AvatarDisplay
                 avatarId={user.avatar}
+                photoURL={user.photoURL}
                 customization={user.avatarCustomization}
                 size="hero"
                 showAura={true}

@@ -13,6 +13,7 @@ export interface UserProfile {
   email: string;
   department: Department;
   avatar: string;
+  photoURL?: string;
   avatarCustomization?: any;
   preferredName: string;
   fullName?: string;
@@ -33,6 +34,7 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
+  photoURL?: string;
   department: Department;
   level: number;
   xp: number;
@@ -238,6 +240,7 @@ export interface UserProfileDoc {
   fullName: string;
   preferredName: string;
   email: string;
+  photoURL?: string;
   phoneNumber?: string;
   collegeName: string;
   department: Department;

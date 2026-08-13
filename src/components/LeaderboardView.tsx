@@ -58,7 +58,14 @@ export const LeaderboardView: React.FC<Props> = ({ user, students, departments }
                     #{st.rank}
                   </span>
 
-                  <img src={st.avatar} alt={st.username} className="w-10 h-10 rounded-xl object-cover border border-slate-700" />
+                  <img
+                    src={(isCurrent && user.photoURL) || st.avatar}
+                    alt={st.username}
+                    className="w-10 h-10 rounded-xl object-cover border border-slate-700"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop';
+                    }}
+                  />
 
                   <div>
                     <div className="font-bold text-sm text-white flex items-center gap-2">

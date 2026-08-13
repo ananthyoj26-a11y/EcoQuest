@@ -90,6 +90,7 @@ export function App() {
       setFirebaseAuthUser(authUser);
       if (authUser) {
         setIsLoadingAuth(true);
+        setShowLandingView(false); // Ensure landing page is hidden when logged in
         try {
           const profile = await getUserProfile(authUser.uid);
           const progress = await getUserProgress(authUser.uid);
@@ -97,17 +98,25 @@ export function App() {
           if (profile) {
             const assembled = assembleAppUser(authUser, profile, progress);
             setUser(assembled);
+            dbCacheService.cacheUser(assembled);
             if (!profile.onboardingCompleted) {
               setShowOnboarding(true);
             }
           } else {
-            // Brand-new Google user — create a minimal user shell and show onboarding
-            const minimalUser = assembleAppUser(authUser, null, null);
-            setUser(minimalUser);
-            setShowOnboarding(true);
+            // Check IndexedDB fallback or assemble minimal user
+            const cachedUser = await dbCacheService.getCachedUser();
+            if (cachedUser && cachedUser.id === authUser.uid) {
+              setUser(cachedUser);
+            } else {
+              const minimalUser = assembleAppUser(authUser, null, null);
+              setUser(minimalUser);
+              setShowOnboarding(true);
+            }
           }
         } catch (err) {
           console.warn('Firebase Auth profile sync error:', err);
+          const minimalUser = assembleAppUser(authUser, null, null);
+          setUser(minimalUser);
         } finally {
           setIsLoadingAuth(false);
           setIsAuthResolving(false);
@@ -279,11 +288,14 @@ export function App() {
     const uid = firebaseAuthUser?.uid || user?.id;
     if (!uid) return;
 
+    const userPhoto = firebaseAuthUser?.photoURL || user?.photoURL || '';
+
     // Build profile doc for Firestore
     const profileDoc = {
       fullName: onboardingData.fullName,
       preferredName: onboardingData.preferredName,
       email: firebaseAuthUser?.email || user?.email || '',
+      photoURL: userPhoto,
       collegeName: onboardingData.collegeName,
       department: onboardingData.department,
       yearOfStudy: onboardingData.yearOfStudy,
@@ -331,6 +343,7 @@ export function App() {
       name: onboardingData.preferredName || onboardingData.fullName,
       email: firebaseAuthUser?.email || user?.email || '',
       avatar: onboardingData.selectedAvatar,
+      photoURL: userPhoto,
       department: onboardingData.department,
       level: 1,
       xp: 150,

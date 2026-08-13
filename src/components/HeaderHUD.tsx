@@ -155,6 +155,7 @@ export const HeaderHUD: React.FC<Props> = ({
           >
             <AvatarDisplay
               avatarId={user.avatar}
+              photoURL={user.photoURL}
               customization={user.avatarCustomization}
               size="sm"
               showLevel={user.level}

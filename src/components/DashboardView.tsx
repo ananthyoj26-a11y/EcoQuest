@@ -232,6 +232,7 @@ export const DashboardView: React.FC<Props> = ({
             <div className="flex items-center gap-4 py-2">
               <AvatarDisplay
                 avatarId={user.avatar}
+                photoURL={user.photoURL}
                 customization={user.avatarCustomization}
                 size="xl"
                 showAura={true}

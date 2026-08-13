@@ -32,6 +32,7 @@ import {
 
 interface AvatarDisplayProps {
   avatarId?: string;
+  photoURL?: string;
   customization?: Partial<AvatarCustomization>;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'hero';
   showCategoryBadge?: boolean;
@@ -43,6 +44,7 @@ interface AvatarDisplayProps {
 
 export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
   avatarId = 'forest_guardian',
+  photoURL,
   customization,
   size = 'md',
   showCategoryBadge = false,
@@ -53,6 +55,8 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
 }) => {
   const avatar = GAMING_AVATARS.find(a => a.id === avatarId) || GAMING_AVATARS[0];
   const custom = { ...avatar.defaultCustomization, ...customization };
+
+  const imgUrl = photoURL || (avatarId && (avatarId.startsWith('http://') || avatarId.startsWith('https://')) ? avatarId : '');
 
   // Map icon component
   const renderIcon = (iconName: string, iconClass: string = 'w-6 h-6') => {
@@ -131,16 +135,27 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
           style={{ backgroundColor: avatar.primaryColor }}
         />
 
-        {/* Icon & Character Identity Visual */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center p-1">
-          <div style={{ color: avatar.accentColor }}>
-            {renderIcon(avatar.badgeIcon, dim.icon)}
+        {/* Icon & Character Identity Visual OR Photo Image */}
+        {imgUrl ? (
+          <img
+            src={imgUrl}
+            alt={avatar.name}
+            className="w-full h-full object-cover rounded-xl"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="relative z-10 flex flex-col items-center justify-center text-center p-1">
+            <div style={{ color: avatar.accentColor }}>
+              {renderIcon(avatar.badgeIcon, dim.icon)}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Customization Details Overlay Label */}
         {['lg', 'xl', '2xl', 'hero'].includes(size) && (
-          <div className="absolute bottom-1 inset-x-1 bg-slate-950/80 backdrop-blur-md rounded border border-white/10 px-1 py-0.5 text-center truncate">
+          <div className="absolute bottom-1 inset-x-1 bg-slate-950/80 backdrop-blur-md rounded border border-white/10 px-1 py-0.5 text-center truncate z-10">
             <span className="text-[9px] font-bold tracking-tight text-white block truncate">
               {custom.outfit || avatar.name}
             </span>
